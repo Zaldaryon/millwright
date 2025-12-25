@@ -69,11 +69,11 @@ namespace Millwright.ModSystem
 
         protected virtual MeshData GetPlateMesh()
         {
-            return ObjectCacheUtil.GetOrCreate(this.Api, this.Block.Code + "-plate", () =>
+            return ObjectCacheUtil.GetOrCreate(this.Api, this.Block.Code + "-plate-" + this.orientations, () =>
             {
                 var shape = this.Api.Assets.TryGet(this.axlePlate).ToObject<Shape>();
                 this.capi.Tesselator.TesselateShape(this.Block, shape, out var mesh);
-                return mesh;
+                return this.RotateMesh(mesh);
             });
         }
 
@@ -84,7 +84,6 @@ namespace Millwright.ModSystem
             if (this.AddPlate)
             {
                 var mesh = this.GetPlateMesh();
-                mesh = this.RotateMesh(mesh);
                 if (mesh != null)
                 { mesher.AddMeshData(mesh); }
             }

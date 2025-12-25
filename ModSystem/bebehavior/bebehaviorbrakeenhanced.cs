@@ -13,16 +13,21 @@ namespace Millwright.ModSystem
         float resistance;
         ILoadedSound brakeSound;
 
+        private static readonly Vec3f particleVelMin = new Vec3f(-0.1f, 0.1f, -0.1f);
+        private static readonly Vec3f particleVelMax = new Vec3f(0.2f, 0.2f, 0.2f);
+        private static readonly AssetLocation woodgrindSound = new AssetLocation("game:sounds/effect/woodgrind.ogg");
+
         private readonly float resistanceMultiplier = (float)ModConfig.Loaded.BrakeResistanceModifier;
+
+        private string side;
 
         public override CompositeShape Shape
         {
             get
             {
-                var side = this.Block.Variant["side"];
                 var shape = new CompositeShape() { Base = new AssetLocation("game:shapes/block/wood/mechanics/axle.json") };
 
-                if (side == "east" || side == "west")
+                if (this.side == "east" || this.side == "west")
                 { shape.rotateY = 90; }
                 return shape;
             }
@@ -40,9 +45,9 @@ namespace Millwright.ModSystem
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
+            this.side = this.Block.Variant["side"];
             this.bebrakeenhanced.RegisterGameTickListener(this.OnEvery50Ms, 100);
-            var side = this.Block.Variant["side"];
-            switch (side)
+            switch (this.side)
             {
                 case "north":
                 case "south":
@@ -74,8 +79,8 @@ namespace Millwright.ModSystem
                     ColorUtil.ColorFromRgba(60, 60, 60, 100),
                     this.Position.ToVec3d().Add(0.1f, 0.5f, 0.1f),
                     this.Position.ToVec3d().Add(0.8f, 0.3f, 0.8f),
-                    new Vec3f(-0.1f, 0.1f, -0.1f),
-                    new Vec3f(0.2f, 0.2f, 0.2f),
+                    particleVelMin,
+                    particleVelMax,
                     2, 0, 0.3f);
             }
             this.UpdateBreakSounds();
@@ -95,7 +100,7 @@ namespace Millwright.ModSystem
                     if (clientWorld == null) return;
                     this.brakeSound = clientWorld.LoadSound(new SoundParams()
                     {
-                        Location = new AssetLocation("game:sounds/effect/woodgrind.ogg"),
+                        Location = woodgrindSound,
                         ShouldLoop = true,
                         Position = this.Position.ToVec3f().Add(0.5f, 0.25f, 0.5f),
                         DisposeOnFinish = false,

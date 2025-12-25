@@ -23,6 +23,8 @@ namespace Millwright.ModSystem
         private AssetLocation sound;
         protected override AssetLocation Sound => this.sound;
 
+        private static readonly AssetLocation toolbreakSound = new AssetLocation("game:sounds/effect/toolbreak");
+
         protected override float GetSoundVolume()
         {
             return (0.5f + (0.5f * (float)this.windSpeed)) * this.SailLength / 3f;
@@ -76,14 +78,15 @@ namespace Millwright.ModSystem
             {
                 if (this.Obstructed(this.SailLength))
                 {
-                    this.Api.World.PlaySoundAt(new AssetLocation("game:sounds/effect/toolbreak"), this.Position.X + 0.5, this.Position.Y + 0.5, this.Position.Z + 0.5, null, false, 20, 1f);
-                    var assetLoc = new AssetLocation("millwright:" + "sailassembly-" + this.bladeType + "-" + this.SailType);
+                    this.Api.World.PlaySoundAt(toolbreakSound, this.Position.X + 0.5, this.Position.Y + 0.5, this.Position.Z + 0.5, null, false, 20, 1f);
+                    var assetLoc = new AssetLocation("millwright:sailassembly-" + this.bladeType + "-" + this.SailType);
 
                     var item = this.Api.World.GetItem(assetLoc);
+                    var spawnPos = this.Blockentity.Pos.ToVec3d().Add(0.5, 0.5, 0.5);
                     while (this.SailLength-- > 0 && item != null)
                     {
                         var stacks = new ItemStack(item, 1);
-                        this.Api.World.SpawnItemEntity(stacks, this.Blockentity.Pos.ToVec3d().Add(0.5, 0.5, 0.5));
+                        this.Api.World.SpawnItemEntity(stacks, spawnPos);
                     }
                     this.SailLength = 0;
                     this.SailType = "";
@@ -96,12 +99,13 @@ namespace Millwright.ModSystem
 
         public override void OnBlockBroken(IPlayer byPlayer = null)
         {
-            var assetLoc = new AssetLocation("millwright:" + "sailassembly-" + this.bladeType + "-" + this.SailType);
+            var assetLoc = new AssetLocation("millwright:sailassembly-" + this.bladeType + "-" + this.SailType);
             var item = this.Api.World.GetItem(assetLoc);
+            var spawnPos = this.Blockentity.Pos.ToVec3d().Add(0.5, 0.5, 0.5);
             while (this.SailLength-- > 0 && item != null)
             {
                 var stacks = new ItemStack(item, 1);
-                this.Api.World.SpawnItemEntity(stacks, this.Blockentity.Pos.ToVec3d().Add(0.5, 0.5, 0.5));
+                this.Api.World.SpawnItemEntity(stacks, spawnPos);
             }
 
             base.OnBlockBroken(byPlayer);
@@ -131,7 +135,7 @@ namespace Millwright.ModSystem
 
             var sail = slot.Itemstack.Collectible.Code.Path;
             var sailtype = slot.Itemstack.Collectible.LastCodePart();
-            if (!sail.StartsWith("sailassembly") || slot.Itemstack.Collectible.Code.Domain != "millwright")
+            if (!sail.StartsWith("sailassembly", StringComparison.Ordinal) || slot.Itemstack.Collectible.Code.Domain != "millwright")
             { return false; }
 
             var sailcount = slot.Itemstack.Collectible.FirstCodePart(1);

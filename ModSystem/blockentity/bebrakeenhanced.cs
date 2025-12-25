@@ -1,7 +1,6 @@
 namespace Millwright.ModSystem
 {
     //using System.Diagnostics;
-    using System.Collections.Generic;
     using Vintagestory.API.Client;
     using Vintagestory.API.Common;
     using Vintagestory.API.Datastructures;
@@ -19,10 +18,6 @@ namespace Millwright.ModSystem
         {
             base.Initialize(api);
         }
-
-
-        private void OnClientGameTick(float dt)
-        { }
 
 
         MeshData ownMesh;
@@ -47,26 +42,27 @@ namespace Millwright.ModSystem
 
         private MeshData GenOpenedMesh(ITesselatorAPI tesselator, float rotY)
         {
-            var key = "mwmechbrakeOpenedMesh";
-            var meshes = ObjectCacheUtil.GetOrCreate(this.Api, key, () => new Dictionary<string, MeshData>());
-
-            if (meshes.TryGetValue("" + rotY, out var mesh))
-            { return mesh; }
-
-            var shapeloc = AssetLocation.Create("millwright:shapes/block/wood/mechanics/brake-stand-opened.json");
-            var shape = Shape.TryGet(this.Api, shapeloc);
-            tesselator.TesselateShape(this.Block, shape, out mesh, new Vec3f(0, rotY, 0));
-            return meshes["" + rotY] = mesh;
+            var key = "mwmechbrakeOpenedMesh" + rotY;
+            var mesh = ObjectCacheUtil.GetOrCreate(this.Api, key, () =>
+            {
+                var shapeloc = AssetLocation.Create("millwright:shapes/block/wood/mechanics/brake-stand-opened.json");
+                var shape = Shape.TryGet(this.Api, shapeloc);
+                tesselator.TesselateShape(this.Block, shape, out var m, new Vec3f(0, rotY, 0));
+                return m;
+            });
+            return mesh;
         }
 
 
         public bool OnInteract(IPlayer byPlayer)
         {
             this.Engaged = !this.Engaged;
-            this.Api.World.PlaySoundAt(new AssetLocation("game:sounds/effect/woodswitch.ogg"), this.Pos.X + 0.5, this.Pos.Y + 0.5, this.Pos.Z + 0.5, byPlayer);
+            this.Api.World.PlaySoundAt(woodswitchSound, this.Pos.X + 0.5, this.Pos.Y + 0.5, this.Pos.Z + 0.5, byPlayer);
             this.MarkDirty(true);
             return true;
         }
+
+        private static readonly AssetLocation woodswitchSound = new AssetLocation("game:sounds/effect/woodswitch.ogg");
 
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
