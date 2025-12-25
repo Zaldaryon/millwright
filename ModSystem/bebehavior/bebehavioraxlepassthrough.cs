@@ -9,7 +9,6 @@ namespace Millwright.ModSystem
     using Vintagestory.API.MathTools;
     using Vintagestory.API.Util;
     using Vintagestory.GameContent.Mechanics;
-    using Newtonsoft;
     
 
     public class BEBehaviorAxlePassthrough : BEBehaviorMPBase // BEBehaviorMPAxle
@@ -131,7 +130,8 @@ namespace Millwright.ModSystem
             var bPos = this.Api.World.BlockAccessor.GetBlock(pos);
             var bNeibPos = this.Api.World.BlockAccessor.GetBlock(neibpos);
 
-            if (bPos?.Class != bNeibPos?.Class) //both aren't passthroughs?
+            if (bPos == null || bNeibPos == null) return false;
+            if (bPos.Class != bNeibPos.Class) //both aren't passthroughs?
             { return false; }
 
             if (bPos.LastCodePart()[0] != bNeibPos.LastCodePart()[1])  //aren't opposites?
@@ -157,7 +157,8 @@ namespace Millwright.ModSystem
             var newNetwork = connectedToBlock.GetNetwork(this.Api.World, neibpos);
             if (newNetwork != null)
             {
-                IMechanicalPowerDevice node = this.Api.World.BlockAccessor.GetBlockEntity(pos).GetBehavior<BEBehaviorMPBase>();
+                IMechanicalPowerDevice node = this.Api.World.BlockAccessor.GetBlockEntity(pos)?.GetBehavior<BEBehaviorMPBase>();
+                if (node == null) return false;
                 connectedToBlock.DidConnectAt(this.Api.World, neibpos, toFacing.Opposite);
                 var curPath = new MechPowerPath(toFacing, node.GetGearedRatio(toFacing), pos, !node.IsPropagationDirection(this.Position, toFacing));
                 this.SetPropagationDirection(curPath);

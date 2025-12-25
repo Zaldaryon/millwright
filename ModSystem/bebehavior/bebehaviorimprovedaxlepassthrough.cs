@@ -9,7 +9,6 @@ namespace Millwright.ModSystem
     using Vintagestory.API.MathTools;
     using Vintagestory.API.Util;
     using Vintagestory.GameContent.Mechanics;
-    using Newtonsoft;
     
 
     public class BEBehaviorImprovedAxlePassthrough : BEBehaviorMPBase // BEBehaviorMPAxle

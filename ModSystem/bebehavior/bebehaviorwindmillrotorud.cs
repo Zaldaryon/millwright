@@ -66,7 +66,7 @@ namespace Millwright.ModSystem
 
         private void CheckWindSpeed(float dt)
         {
-            this.windSpeed = this.weatherSystem.WeatherDataSlowAccess.GetWindSpeed(this.Blockentity.Pos.ToVec3d());
+            this.windSpeed = this.weatherSystem?.WeatherDataSlowAccess?.GetWindSpeed(this.Blockentity.Pos.ToVec3d()) ?? 0;
             if (this.Api.World.BlockAccessor.GetLightLevel(this.Blockentity.Pos, EnumLightLevelType.OnlySunLight) < 5 && this.Api.World.Config.GetString("undergroundWindmills", "false") != "true")
             {
                 this.windSpeed = 0;
@@ -79,16 +79,16 @@ namespace Millwright.ModSystem
                     this.Api.World.PlaySoundAt(new AssetLocation("game:sounds/effect/toolbreak"), this.Position.X + 0.5, this.Position.Y + 0.5, this.Position.Z + 0.5, null, false, 20, 1f);
                     var assetLoc = new AssetLocation("millwright:" + "sailassembly-" + this.bladeType + "-" + this.SailType);
 
-                    while (this.SailLength-- > 0)
+                    var item = this.Api.World.GetItem(assetLoc);
+                    while (this.SailLength-- > 0 && item != null)
                     {
-                        
-                        var stacks = new ItemStack(this.Api.World.GetItem(assetLoc), 1);
+                        var stacks = new ItemStack(item, 1);
                         this.Api.World.SpawnItemEntity(stacks, this.Blockentity.Pos.ToVec3d().Add(0.5, 0.5, 0.5));
                     }
                     this.SailLength = 0;
                     this.SailType = "";
                     this.Blockentity.MarkDirty(true);
-                    this.network.updateNetwork(this.manager.getTickNumber());
+                    this.network?.updateNetwork(this.manager?.getTickNumber() ?? 0);
                 }
             }
         }
@@ -96,10 +96,11 @@ namespace Millwright.ModSystem
 
         public override void OnBlockBroken(IPlayer byPlayer = null)
         {
-            while (this.SailLength-- > 0)
+            var assetLoc = new AssetLocation("millwright:" + "sailassembly-" + this.bladeType + "-" + this.SailType);
+            var item = this.Api.World.GetItem(assetLoc);
+            while (this.SailLength-- > 0 && item != null)
             {
-                var assetLoc = new AssetLocation("millwright:" + "sailassembly-" + this.bladeType + "-" + this.SailType);
-                var stacks = new ItemStack(this.Api.World.GetItem(assetLoc), 1);
+                var stacks = new ItemStack(item, 1);
                 this.Api.World.SpawnItemEntity(stacks, this.Blockentity.Pos.ToVec3d().Add(0.5, 0.5, 0.5));
             }
 
@@ -141,7 +142,9 @@ namespace Millwright.ModSystem
 
 
             var assetLoc = new AssetLocation("millwright:" + sail);
-            var sailStack = new ItemStack(this.Api.World.GetItem(assetLoc));
+            var sailItem = this.Api.World.GetItem(assetLoc);
+            if (sailItem == null) return false;
+            var sailStack = new ItemStack(sailItem);
             if (!slot.Itemstack.Equals(this.Api.World, sailStack, GlobalConstants.IgnoredStackAttributes))
             {
                 return false;
@@ -289,9 +292,9 @@ namespace Millwright.ModSystem
                         rotateY = this.Block.Shape.rotateY
                     };
                 }
-                catch
+                catch (Exception ex)
                 {
-                    //shouldn't need the try catch as long as all the assets exist
+                    this.Api?.Logger?.Warning("Millwright: Failed to load windmill shape: {0}", ex.Message);
                 }
             }
         }

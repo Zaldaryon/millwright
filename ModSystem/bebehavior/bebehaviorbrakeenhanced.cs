@@ -91,7 +91,9 @@ namespace Millwright.ModSystem
             {
                 if (this.brakeSound == null || !this.brakeSound.IsPlaying)
                 {
-                    this.brakeSound = ((IClientWorldAccessor)this.Api.World).LoadSound(new SoundParams()
+                    var clientWorld = this.Api.World as IClientWorldAccessor;
+                    if (clientWorld == null) return;
+                    this.brakeSound = clientWorld.LoadSound(new SoundParams()
                     {
                         Location = new AssetLocation("game:sounds/effect/woodgrind.ogg"),
                         ShouldLoop = true,

@@ -42,7 +42,7 @@
         {
             get
             {
-                if (Sound != null && network?.Speed > 0 && Api.World.ElapsedMilliseconds - lastMsAngle > 500 / network.Speed && Api.Side == EnumAppSide.Client)
+                if (Sound != null && network?.Speed > 0.001f && Api.World.ElapsedMilliseconds - lastMsAngle > 500 / network.Speed && Api.Side == EnumAppSide.Client)
                 {
                     Api.World.PlaySoundAt(Sound, Position, 0, null, false, 18, GetSoundVolume());
                     lastMsAngle = Api.World.ElapsedMilliseconds;

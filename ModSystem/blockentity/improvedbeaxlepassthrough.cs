@@ -89,6 +89,7 @@ namespace Millwright.ModSystem
 
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder sb)
         {
+            if (this.inventory == null) return;
             var block = this.Api.World.BlockAccessor.GetBlock(this.Pos, BlockLayersAccess.Default);
 
             if (!this.BlockSlot.Empty)

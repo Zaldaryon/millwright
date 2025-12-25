@@ -58,6 +58,7 @@ namespace Millwright.ModSystem
                         { return false; }
 
                         var toPlaceBlock = world.GetBlock(new AssetLocation("millwright:" + this.FirstCodePart() + "-" + this.bladeType + "-" + face.Opposite.Code));
+                        if (toPlaceBlock == null) return false;
                         world.BlockAccessor.SetBlock(toPlaceBlock.BlockId, blockSel.Position);
 
                         block.DidConnectAt(world, pos, face.Opposite);
